@@ -1,0 +1,220 @@
+// sample-requests.http
+// Use this file with VS Code REST Client extension or similar tools
+
+### Create a simple workflow definition
+POST http://localhost:5000/api/workflow-definitions
+Content-Type: application/json
+
+{
+  "name": "Document Approval",
+  "description": "Simple document approval workflow",
+  "states": [
+    {
+      "id": "draft",
+      "name": "Draft",
+      "isInitial": true,
+      "isFinal": false,
+      "enabled": true,
+      "description": "Document is being authored"
+    },
+    {
+      "id": "review",
+      "name": "Under Review",
+      "isInitial": false,
+      "isFinal": false,
+      "enabled": true,
+      "description": "Document is being reviewed"
+    },
+    {
+      "id": "approved",
+      "name": "Approved",
+      "isInitial": false,
+      "isFinal": true,
+      "enabled": true,
+      "description": "Document has been approved"
+    },
+    {
+      "id": "rejected",
+      "name": "Rejected",
+      "isInitial": false,
+      "isFinal": true,
+      "enabled": true,
+      "description": "Document has been rejected"
+    }
+  ],
+  "actions": [
+    {
+      "id": "submit_for_review",
+      "name": "Submit for Review",
+      "enabled": true,
+      "fromStates": ["draft"],
+      "toState": "review",
+      "description": "Submit document for review"
+    },
+    {
+      "id": "approve",
+      "name": "Approve",
+      "enabled": true,
+      "fromStates": ["review"],
+      "toState": "approved",
+      "description": "Approve the document"
+    },
+    {
+      "id": "reject",
+      "name": "Reject",
+      "enabled": true,
+      "fromStates": ["review"],
+      "toState": "rejected",
+      "description": "Reject the document"
+    },
+    {
+      "id": "revise",
+      "name": "Send Back for Revision",
+      "enabled": true,
+      "fromStates": ["review"],
+      "toState": "draft",
+      "description": "Send back to draft for revision"
+    }
+  ]
+}
+
+### Get all workflow definitions
+GET http://localhost:5000/api/workflow-definitions
+
+### Get specific workflow definition (replace {id} with actual ID from create response)
+GET http://localhost:5000/api/workflow-definitions/{definition-id}
+
+### Create a workflow instance (replace {definition-id} with actual ID)
+POST http://localhost:5000/api/workflow-instances
+Content-Type: application/json
+
+{
+  "definitionId": "{definition-id}"
+}
+
+### Get all workflow instances
+GET http://localhost:5000/api/workflow-instances
+
+### Get specific workflow instance (replace {id} with actual instance ID)
+GET http://localhost:5000/api/workflow-instances/{instance-id}
+
+### Execute action on instance (replace {instance-id} with actual ID)
+POST http://localhost:5000/api/workflow-instances/{instance-id}/execute
+Content-Type: application/json
+
+{
+  "actionId": "submit_for_review"
+}
+
+### Execute another action - approve
+POST http://localhost:5000/api/workflow-instances/{instance-id}/execute
+Content-Type: application/json
+
+{
+  "actionId": "approve"
+}
+
+### Error test - try to execute action on completed instance (should fail)
+POST http://localhost:5000/api/workflow-instances/{instance-id}/execute
+Content-Type: application/json
+
+{
+  "actionId": "approve"
+}
+
+### Create a more complex workflow - Order Processing
+POST http://localhost:5000/api/workflow-definitions
+Content-Type: application/json
+
+{
+  "name": "Order Processing",
+  "description": "E-commerce order processing workflow",
+  "states": [
+    {
+      "id": "cart",
+      "name": "In Cart",
+      "isInitial": true,
+      "isFinal": false,
+      "enabled": true
+    },
+    {
+      "id": "pending_payment",
+      "name": "Pending Payment",
+      "isInitial": false,
+      "isFinal": false,
+      "enabled": true
+    },
+    {
+      "id": "paid",
+      "name": "Paid",
+      "isInitial": false,
+      "isFinal": false,
+      "enabled": true
+    },
+    {
+      "id": "shipped",
+      "name": "Shipped",
+      "isInitial": false,
+      "isFinal": false,
+      "enabled": true
+    },
+    {
+      "id": "delivered",
+      "name": "Delivered",
+      "isInitial": false,
+      "isFinal": true,
+      "enabled": true
+    },
+    {
+      "id": "cancelled",
+      "name": "Cancelled",
+      "isInitial": false,
+      "isFinal": true,
+      "enabled": true
+    }
+  ],
+  "actions": [
+    {
+      "id": "checkout",
+      "name": "Checkout",
+      "enabled": true,
+      "fromStates": ["cart"],
+      "toState": "pending_payment"
+    },
+    {
+      "id": "pay",
+      "name": "Process Payment",
+      "enabled": true,
+      "fromStates": ["pending_payment"],
+      "toState": "paid"
+    },
+    {
+      "id": "ship",
+      "name": "Ship Order",
+      "enabled": true,
+      "fromStates": ["paid"],
+      "toState": "shipped"
+    },
+    {
+      "id": "deliver",
+      "name": "Mark as Delivered",
+      "enabled": true,
+      "fromStates": ["shipped"],
+      "toState": "delivered"
+    },
+    {
+      "id": "cancel_from_cart",
+      "name": "Cancel from Cart",
+      "enabled": true,
+      "fromStates": ["cart"],
+      "toState": "cancelled"
+    },
+    {
+      "id": "cancel_from_pending",
+      "name": "Cancel from Pending",
+      "enabled": true,
+      "fromStates": ["pending_payment"],
+      "toState": "cancelled"
+    }
+  ]
+}
